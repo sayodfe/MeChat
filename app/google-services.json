@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "440318444542",
+    "firebase_url": "https://first-firebase-project-54b84-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "first-firebase-project-54b84",
+    "storage_bucket": "first-firebase-project-54b84.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:440318444542:android:7c46b131c0dd8910ef36af",
+        "android_client_info": {
+          "package_name": "com.sayod.mechat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmrLTNsVSgcXO9HuNSI-Q28ATp2k5s-s0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
