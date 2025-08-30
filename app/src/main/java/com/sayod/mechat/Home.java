@@ -1,9 +1,13 @@
 package com.sayod.mechat;
 
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -26,11 +30,10 @@ public class Home extends AppCompatActivity {
 
     EditText inputMessage;
     ListView listView;
-    ArrayList<String> messagesList;
-    ArrayAdapter<String> adapter;
+    ArrayList<Message> messagesList;
+    BaseAdapter adapter;
     DatabaseReference dataref;
 
-    String username= FirebaseAuth.getInstance().getCurrentUser().getEmail().toString();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,12 +41,54 @@ public class Home extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
+
         inputMessage = findViewById(R.id.home_edittext);
         listView = findViewById(R.id.home_listview);
 
         messagesList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, messagesList);
+        adapter=new BaseAdapter() {
+            @Override
+            public int getCount() {
+                return messagesList.size();
+            }
+
+            @Override
+            public Object getItem(int position) {
+                return null;
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return 0;
+            }
+
+            @Override
+            public View getView(int position, View cv, ViewGroup parent) {
+                if(cv==null){
+                    cv=getLayoutInflater().inflate(R.layout.item_message_self,null);
+                }
+                TextView others=cv.findViewById(R.id.item_message_other_user_textview);
+                TextView metv=cv.findViewById(R.id.txtMessage);
+                if(messagesList.get(position).getUserid().equals(FirebaseAuth.getInstance().getUid())){
+                    others.setVisibility(View.INVISIBLE);
+                    metv.setVisibility(View.VISIBLE);
+                    metv.setText(messagesList.get(position).getText());
+                }else{
+                    metv.setVisibility(View.INVISIBLE);
+                    others.setVisibility(View.VISIBLE);
+                    others.setText(messagesList.get(position).getText());
+                }
+                return cv;
+            }
+        };
         listView.setAdapter(adapter);
+
 
         // Reference to "messages" path in database
         dataref = FirebaseDatabase.getInstance().getReference("messages");
@@ -52,7 +97,7 @@ public class Home extends AppCompatActivity {
         findViewById(R.id.home_send_button).setOnClickListener(v -> {
             String text = inputMessage.getText().toString().trim();
             if (!text.isEmpty()) {
-                Message message = new Message(username, text);
+                Message message = new Message( text,FirebaseAuth.getInstance().getUid(),FirebaseAuth.getInstance().getCurrentUser().getEmail());
                 dataref.push().setValue(message);  // store message in DB
                 inputMessage.setText("");
             } else {
@@ -64,12 +109,10 @@ public class Home extends AppCompatActivity {
         dataref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                messagesList.clear();
+                messagesList=new ArrayList<>();
                 for (DataSnapshot msgSnapshot : snapshot.getChildren()) {
                     Message msg = msgSnapshot.getValue(Message.class);
-                    if (msg != null) {
-                        messagesList.add(msg.username + ": " + msg.text);
-                    }
+                    messagesList.add(msg);
                 }
                 adapter.notifyDataSetChanged();
             }
